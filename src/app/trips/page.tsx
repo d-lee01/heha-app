@@ -51,13 +51,18 @@ export default function TripsPage() {
 
   return (
     <PageShell backHref="/">
-      <div className="page-enter stagger-1 mb-2">
-        <h1 className="gradient-text text-4xl font-bold sm:text-5xl">
-          My Trips
-        </h1>
-        <p className="mt-2 text-sm text-white/50">
-          Your saved trip plans
-        </p>
+      <div className="page-enter stagger-1 mb-2 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="gradient-text text-4xl font-bold sm:text-5xl">
+            My Trips
+          </h1>
+          <p className="mt-2 text-sm text-white/50">
+            Your saved trip plans
+          </p>
+        </div>
+        <GlassButton href="/trip/new" variant="teal" size="sm">
+          + New Trip
+        </GlassButton>
       </div>
 
       <div className="page-enter stagger-2 prismatic-line w-full mb-8" />
