@@ -1,0 +1,32 @@
+import clsx from "clsx";
+import OrbField, { type Orb, SUBTLE_ORBS } from "./OrbField";
+import BackLink from "./BackLink";
+
+interface PageShellProps {
+  children: React.ReactNode;
+  orbs?: Orb[];
+  backHref?: string;
+  centered?: boolean;
+}
+
+export default function PageShell({
+  children,
+  orbs = SUBTLE_ORBS,
+  backHref,
+  centered,
+}: PageShellProps) {
+  return (
+    <div
+      className={clsx(
+        "relative flex min-h-screen overflow-hidden bg-[var(--background)]",
+        centered ? "items-center justify-center" : "items-start justify-center pt-24 pb-16"
+      )}
+    >
+      <OrbField orbs={orbs} />
+      {backHref && <BackLink href={backHref} />}
+      <main className="page-enter relative z-10 mx-4 w-full max-w-2xl">
+        {children}
+      </main>
+    </div>
+  );
+}

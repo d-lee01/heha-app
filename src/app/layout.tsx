@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "heha - The Future of Trips",
+  title: "Heeha — Experience Travel Differently",
   description:
-    "We're ready to build the future of trips. Something extraordinary is on its way.",
+    "AI-powered trip planning with intelligent agents. Plan, discover, and experience extraordinary travel.",
 };
 
 export default function RootLayout({
