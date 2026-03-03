@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createSession, sessionCookieOptions } from '@/lib/auth/session'
+import { createSession, sessionCookieOptions, hashEmail } from '@/lib/auth/session'
 import type { SessionData } from '@/lib/auth/types'
 
 interface GuestBody {
@@ -26,16 +26,11 @@ export async function POST(request: Request) {
   }
 
   // Generate SHA-256 hash of normalized email
-  const normalized = email.toLowerCase().trim()
-  const encoder = new TextEncoder()
-  const data = encoder.encode(normalized)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  const userHash = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
+  const userHash = await hashEmail(email)
 
   // Create guest session (authenticated so they can save trips)
   const sessionData: SessionData = {
-    email: normalized,
+    email: email.toLowerCase().trim(),
     userId: userHash,
     userHash,
     isAuthenticated: true,

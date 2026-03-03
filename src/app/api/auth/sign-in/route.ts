@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { signInWithEmailHash } from '@/lib/auth/hx-rest-client'
-import { createSession, sessionCookieOptions } from '@/lib/auth/session'
+import { createSession, sessionCookieOptions, hashEmail } from '@/lib/auth/session'
 import type { SessionData } from '@/lib/auth/types'
 
 interface SignInBody {
@@ -38,8 +38,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Create a heha session
+    const userHash = await hashEmail(email)
     const sessionData: SessionData = {
       email,
+      userId: userHash,
+      userHash,
       isAuthenticated: true,
     }
     const token = await createSession(sessionData)

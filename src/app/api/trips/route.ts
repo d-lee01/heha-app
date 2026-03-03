@@ -56,6 +56,11 @@ export async function POST(request: NextRequest) {
 
   const validated = result.data;
 
+  // 2b. Use session userId if available (ensures consistency with GET)
+  const cookieValue = request.cookies.get(getSessionCookieName())?.value;
+  const session = await getSession(cookieValue);
+  const userId = session?.userId || validated.user_id;
+
   // 3. Check for auth_session cookie → sync to Traveller API
   const authSession = request.cookies.get("auth_session")?.value;
   let travellerResult = { synced: false, trip_id: null as string | null, error: null as string | null };
@@ -69,7 +74,7 @@ export async function POST(request: NextRequest) {
   const { data: trip, error: dbError } = await supabase
     .from("trips")
     .insert({
-      user_id: validated.user_id,
+      user_id: userId,
       trip: validated.trip,
       people_travelling: validated.people_travelling,
       preferences: validated.preferences,

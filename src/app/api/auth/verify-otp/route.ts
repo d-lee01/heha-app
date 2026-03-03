@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { verifyOtp } from '@/lib/auth/hx-client'
-import { createSession, sessionCookieOptions } from '@/lib/auth/session'
+import { createSession, sessionCookieOptions, hashEmail } from '@/lib/auth/session'
 import type { SessionData } from '@/lib/auth/types'
 
 export async function POST(request: Request) {
@@ -29,8 +29,11 @@ export async function POST(request: Request) {
     }
 
     // Create heha session
+    const userHash = await hashEmail(email)
     const sessionData: SessionData = {
       email,
+      userId: userHash,
+      userHash,
       isAuthenticated: true,
     }
     const token = await createSession(sessionData)
