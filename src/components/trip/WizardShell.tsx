@@ -112,6 +112,7 @@ export default function WizardShell() {
   const router = useRouter();
   const session = useSession();
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [state, dispatch] = useReducer(reducer, {
     mode: "guided",
     currentStep: 0,
@@ -134,6 +135,7 @@ export default function WizardShell() {
 
   const handleSubmit = useCallback(async () => {
     if (submitting) return;
+    setSubmitError("");
 
     // Always save to sessionStorage as fallback
     sessionStorage.setItem("heha-trip-data", JSON.stringify(tripData));
@@ -152,18 +154,23 @@ export default function WizardShell() {
         body: JSON.stringify(payload),
       });
 
-      if (res.ok) {
-        const { trip } = await res.json();
-        router.push(`/trip/${trip.id}`);
+      const data = await res.json();
+
+      if (res.ok && data.trip?.id) {
+        router.push(`/trip/${data.trip.id}`);
         return;
       }
-    } catch {
-      // fall through to generated page
+
+      // POST failed — show error but still let user see their trip
+      console.error("POST /api/trips failed:", data);
+      setSubmitError(data.error || `Save failed (${res.status})`);
+      router.push("/trip/generated");
+    } catch (err) {
+      console.error("Trip submit error:", err);
+      router.push("/trip/generated");
     } finally {
       setSubmitting(false);
     }
-
-    router.push("/trip/generated");
   }, [tripData, router, session.userId, submitting]);
 
   const handleSkip = useCallback(() => dispatch({ type: "NEXT_STEP" }), []);
