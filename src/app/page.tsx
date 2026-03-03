@@ -1,57 +1,31 @@
-import Image from "next/image";
-import PageShell from "@/components/PageShell";
-import GlassCard from "@/components/GlassCard";
-import GlassButton from "@/components/GlassButton";
-import { LANDING_ORBS } from "@/components/OrbField";
+import OrbField, { LANDING_ORBS } from "@/components/OrbField";
+import HeroSection from "@/components/HeroSection";
+import PathCard from "@/components/PathCard";
 
 export default function Home() {
   return (
-    <PageShell orbs={LANDING_ORBS} centered>
-      <GlassCard size="md" shimmer className="text-center">
-        {/* Bird mascot */}
-        <div className="page-enter stagger-1 -mt-2 mb-4 flex justify-center">
-          <Image
-            src="/heha-bird.png"
-            alt="HEHA! bird mascot"
-            width={400}
-            height={400}
-            priority
-            className="w-[300px] sm:w-[400px] drop-shadow-[0_0_40px_rgba(105,30,225,0.5)]"
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[var(--background)] px-6 py-20">
+      <OrbField orbs={LANDING_ORBS} />
+
+      <main className="relative z-10 flex w-full max-w-4xl flex-col items-center">
+        <HeroSection />
+
+        {/* Path cards */}
+        <div className="page-enter stagger-6 mt-16 grid w-full gap-6 sm:grid-cols-2">
+          <PathCard
+            href="/auth/entry"
+            title="I'm Human"
+            description="Plan your trip step by step"
+            color="coral"
+          />
+          <PathCard
+            href="/agents/skills"
+            title="I'm an Agent"
+            description="Integrate with our API"
+            color="purple"
           />
         </div>
-
-        {/* Logo */}
-        <div className="page-enter stagger-2 flex justify-center">
-          <Image
-            src="/heha-logo.png"
-            alt="HEHA!"
-            width={220}
-            height={70}
-            priority
-          />
-        </div>
-
-        {/* Prismatic accent line */}
-        <div className="page-enter stagger-3 prismatic-line mx-auto mt-6 w-16" />
-
-        {/* Hero heading */}
-        <h1
-          className="page-enter stagger-4 gradient-text mt-8 font-bold leading-snug tracking-tight"
-          style={{ fontSize: "clamp(40px, 8vw, 80px)" }}
-        >
-          Experience Heeha
-        </h1>
-
-        {/* CTA buttons */}
-        <div className="page-enter stagger-5 mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-          <GlassButton href="/auth/entry" variant="coral">
-            I&rsquo;m Human
-          </GlassButton>
-          <GlassButton href="/agents/skills" variant="purple">
-            I&rsquo;m an Agent
-          </GlassButton>
-        </div>
-      </GlassCard>
-    </PageShell>
+      </main>
+    </div>
   );
 }

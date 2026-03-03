@@ -7,6 +7,7 @@ interface PageShellProps {
   orbs?: Orb[];
   backHref?: string;
   centered?: boolean;
+  variant?: "default" | "full";
 }
 
 export default function PageShell({
@@ -14,6 +15,7 @@ export default function PageShell({
   orbs = SUBTLE_ORBS,
   backHref,
   centered,
+  variant = "default",
 }: PageShellProps) {
   return (
     <div
@@ -24,7 +26,12 @@ export default function PageShell({
     >
       <OrbField orbs={orbs} />
       {backHref && <BackLink href={backHref} />}
-      <main className="page-enter relative z-10 mx-4 w-full max-w-2xl">
+      <main
+        className={clsx(
+          "page-enter relative z-10 mx-4 w-full",
+          variant === "full" ? "" : "max-w-2xl"
+        )}
+      >
         {children}
       </main>
     </div>
