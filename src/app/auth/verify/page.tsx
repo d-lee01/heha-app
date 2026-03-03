@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { useSession } from "@/lib/auth/use-session";
 import PageShell from "@/components/PageShell";
 import GlassCard from "@/components/GlassCard";
 import GlassButton from "@/components/GlassButton";
@@ -10,8 +11,15 @@ import OtpInput from "@/components/OtpInput";
 
 function VerifyForm() {
   const router = useRouter();
+  const session = useSession();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
+
+  useEffect(() => {
+    if (session.authenticated) {
+      router.replace("/trip/new");
+    }
+  }, [session.authenticated, router]);
 
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
@@ -67,6 +75,10 @@ function VerifyForm() {
     } finally {
       setResending(false);
     }
+  }
+
+  if (session.loading || session.authenticated) {
+    return <div className="text-white/40 text-sm text-center">Loading…</div>;
   }
 
   return (

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "@/lib/auth/use-session";
 import PageShell from "@/components/PageShell";
 import GlassCard from "@/components/GlassCard";
 import GlassButton from "@/components/GlassButton";
@@ -9,9 +10,16 @@ import GlassInput from "@/components/GlassInput";
 
 export default function AuthEntryPage() {
   const router = useRouter();
+  const session = useSession();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (session.authenticated) {
+      router.replace("/trip/new");
+    }
+  }, [session.authenticated, router]);
 
   async function handleLogin() {
     if (!email) return;
@@ -65,6 +73,14 @@ export default function AuthEntryPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (session.loading || session.authenticated) {
+    return (
+      <PageShell backHref="/" centered>
+        <div className="text-white/40 text-sm text-center">Loading…</div>
+      </PageShell>
+    );
   }
 
   return (

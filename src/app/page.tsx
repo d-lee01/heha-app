@@ -1,8 +1,31 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "@/lib/auth/use-session";
 import OrbField, { LANDING_ORBS } from "@/components/OrbField";
 import HeroSection from "@/components/HeroSection";
 import PathCard from "@/components/PathCard";
 
 export default function Home() {
+  const session = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (session.authenticated) {
+      router.replace("/trip/new");
+    }
+  }, [session.authenticated, router]);
+
+  if (session.loading || session.authenticated) {
+    return (
+      <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[var(--background)] px-6 py-20">
+        <OrbField orbs={LANDING_ORBS} />
+        <div className="relative z-10 text-white/40 text-sm">Loading…</div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[var(--background)] px-6 py-20">
       <OrbField orbs={LANDING_ORBS} />

@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import OrbField, { type Orb, SUBTLE_ORBS } from "./OrbField";
 import BackLink from "./BackLink";
+import AuthStatus from "./AuthStatus";
 
 interface PageShellProps {
   children: React.ReactNode;
@@ -26,6 +27,7 @@ export default function PageShell({
     >
       <OrbField orbs={orbs} />
       {backHref && <BackLink href={backHref} />}
+      <AuthStatus />
       <main
         className={clsx(
           "page-enter relative z-10 mx-4 w-full",
