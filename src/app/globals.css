@@ -738,7 +738,7 @@ body {
   animation-delay: 0.4s;
 }
 
-/* Mic button */
+/* Mic button — base (idle: coral) */
 .mic-button {
   width: 96px;
   height: 96px;
@@ -750,7 +750,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   position: relative;
 }
 
@@ -759,13 +759,40 @@ body {
   transform: scale(1.05);
 }
 
-.mic-button[data-listening="true"] {
+/* Listening state: coral glow */
+.mic-button[data-state="listening"] {
   background: rgba(247, 76, 65, 0.2);
   border-color: rgba(247, 76, 65, 0.6);
   box-shadow: 0 0 40px rgba(247, 76, 65, 0.3);
 }
 
-/* Mic pulse ring */
+/* Processing state: blue + spinner */
+.mic-button[data-state="processing"] {
+  background: rgba(47, 149, 243, 0.1);
+  border-color: rgba(47, 149, 243, 0.4);
+  color: var(--blue);
+  box-shadow: 0 0 30px rgba(47, 149, 243, 0.2);
+  cursor: default;
+}
+
+.mic-button[data-state="processing"]:hover {
+  background: rgba(47, 149, 243, 0.1);
+  transform: none;
+}
+
+/* Speaking state: teal + wave */
+.mic-button[data-state="speaking"] {
+  background: rgba(35, 166, 169, 0.15);
+  border-color: rgba(35, 166, 169, 0.5);
+  color: var(--teal);
+  box-shadow: 0 0 40px rgba(35, 166, 169, 0.25);
+}
+
+.mic-button[data-state="speaking"]:hover {
+  background: rgba(35, 166, 169, 0.2);
+}
+
+/* Listening: coral pulse rings */
 @keyframes mic-pulse {
   0% {
     transform: scale(1);
@@ -784,6 +811,100 @@ body {
   border: 2px solid rgba(247, 76, 65, 0.4);
   animation: mic-pulse 1.5s ease-out infinite;
   pointer-events: none;
+}
+
+/* Processing: spinning ring */
+@keyframes mic-processing-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.mic-processing-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: rgba(47, 149, 243, 0.7);
+  border-right-color: rgba(47, 149, 243, 0.3);
+  animation: mic-processing-spin 1s linear infinite;
+  pointer-events: none;
+}
+
+/* Speaking: expanding teal rings */
+@keyframes mic-speak-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.mic-speak-ring {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid rgba(35, 166, 169, 0.35);
+  animation: mic-speak-pulse 1.8s ease-out infinite;
+  pointer-events: none;
+}
+
+/* Memory chip fade-in-out */
+@keyframes memory-flash {
+  0% { opacity: 0; transform: translateY(4px); }
+  15% { opacity: 1; transform: translateY(0); }
+  85% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-4px); }
+}
+
+.memory-chip {
+  animation: memory-flash 3s ease-in-out both;
+}
+
+/* ——————————————————————————————————————
+   Flight Briefing
+   —————————————————————————————————————— */
+
+/* Briefing section card — lighter glass than main GlassCard */
+.briefing-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.02) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  border-radius: 24px;
+  padding: 24px 24px;
+}
+
+@media (min-width: 640px) {
+  .briefing-card {
+    padding: 24px 32px;
+  }
+}
+
+/* Shimmer text for TBD values */
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 2s ease-in-out infinite;
 }
 
 /* ——————————————————————————————————————
