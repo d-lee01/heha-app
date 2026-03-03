@@ -30,7 +30,7 @@ export async function POST(request: Request) {
   const normalizedEmail = email.toLowerCase().trim()
   const userHash = await hashEmail(email)
 
-  // Upsert user in Supabase
+  // Upsert guest user into Supabase
   const supabase = getSupabaseClient()
   await supabase
     .from('users')

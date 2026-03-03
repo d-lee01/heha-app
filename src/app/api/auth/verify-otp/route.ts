@@ -29,19 +29,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Invalid OTP' }, { status: 401 })
     }
 
-    // Upsert user in Supabase
+    // Generate userId from email hash (same algorithm as guest, for consistency)
+    const normalized = email.toLowerCase().trim()
     const userHash = await hashEmail(email)
+
+    // Upsert authenticated user into Supabase (upgrades guest → otp if exists)
     const supabase = getSupabaseClient()
     await supabase
       .from('users')
       .upsert(
-        { id: userHash, email: email.toLowerCase().trim(), auth_type: 'holiday_extras', last_seen_at: new Date().toISOString() },
+        { id: userHash, email: normalized, auth_type: 'otp', last_seen_at: new Date().toISOString() },
         { onConflict: 'id' }
       )
 
     // Create heha session
     const sessionData: SessionData = {
-      email,
+      email: normalized,
       userId: userHash,
       userHash,
       isAuthenticated: true,

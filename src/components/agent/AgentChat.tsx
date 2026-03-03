@@ -2,77 +2,123 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { TripData } from "@/types/trip";
-import { getAgentStep, getAgentFollowUp, isAgentConversationComplete } from "@/lib/dummy-agent";
+import type { ChatMessage, AgentChatResponse, SavedMemory } from "@/types/agent";
 import AgentMessage from "./AgentMessage";
 import AgentThinking from "./AgentThinking";
 import GlassButton from "@/components/GlassButton";
-
-interface Message {
-  role: "user" | "agent";
-  text: string;
-}
 
 interface AgentChatProps {
   tripData: TripData;
   onTripDataChange: (data: TripData) => void;
   onComplete: () => void;
+  userId: string | null;
 }
 
-export default function AgentChat({ tripData, onTripDataChange, onComplete }: AgentChatProps) {
-  const [messages, setMessages] = useState<Message[]>(() => {
-    const step = getAgentStep(tripData);
-    return [{ role: "agent" as const, text: step.agentMessage }];
-  });
+const GREETING =
+  "Hey! I'm your Heeha travel assistant. Tell me about the trip you're planning — where are you going, when, who's coming? The more you share, the faster we'll get you sorted!";
+
+export default function AgentChat({
+  tripData,
+  onTripDataChange,
+  onComplete,
+  userId,
+}: AgentChatProps) {
+  const [history, setHistory] = useState<ChatMessage[]>([
+    { role: "assistant", content: GREETING },
+  ]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
+  const [formComplete, setFormComplete] = useState(false);
+  const [lastMemories, setLastMemories] = useState<SavedMemory[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const tripDataRef = useRef(tripData);
+  tripDataRef.current = tripData;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, thinking]);
+  }, [history, thinking]);
 
-  const send = useCallback(() => {
+  const send = useCallback(async () => {
     if (!input.trim() || thinking) return;
 
     const userText = input.trim();
     setInput("");
-    setMessages((prev) => [...prev, { role: "user", text: userText }]);
+    setLastMemories([]);
+
+    const userMessage: ChatMessage = { role: "user", content: userText };
+    const updatedHistory = [...history, userMessage];
+    setHistory(updatedHistory);
     setThinking(true);
 
-    const currentStep = getAgentStep(tripData);
-    const updatedData = currentStep.extractField(userText, tripData);
-    onTripDataChange(updatedData);
+    try {
+      const res = await fetch("/api/agent/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: updatedHistory,
+          tripData: tripDataRef.current,
+          sessionId: "default",
+          userId,
+        }),
+      });
 
-    setTimeout(() => {
-      const followUp = getAgentFollowUp(currentStep.id, userText);
-      const nextStep = getAgentStep(updatedData);
-
-      const newMessages: Message[] = [{ role: "agent", text: followUp }];
-
-      if (nextStep.id !== currentStep.id && nextStep.id !== "complete") {
-        newMessages.push({ role: "agent", text: nextStep.agentMessage });
-      } else if (nextStep.id === "complete") {
-        newMessages.push({ role: "agent", text: nextStep.agentMessage });
+      if (!res.ok) {
+        throw new Error("API request failed");
       }
 
-      setMessages((prev) => [...prev, ...newMessages]);
-      setThinking(false);
-    }, 1000);
-  }, [input, thinking, tripData, onTripDataChange]);
+      const data: AgentChatResponse = await res.json();
 
-  const done = isAgentConversationComplete(tripData);
+      // Replace tripData with server's updated version
+      onTripDataChange(data.updatedTripData);
+
+      // Track saved memories for display
+      if (data.memories.length > 0) {
+        setLastMemories(data.memories);
+      }
+
+      if (data.formComplete) {
+        setFormComplete(true);
+      }
+
+      const assistantMessage: ChatMessage = {
+        role: "assistant",
+        content: data.message,
+      };
+      setHistory((prev) => [...prev, assistantMessage]);
+    } catch {
+      setHistory((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "Sorry, something went wrong. Could you try that again?",
+        },
+      ]);
+    } finally {
+      setThinking(false);
+    }
+  }, [input, thinking, history, onTripDataChange, userId]);
 
   return (
     <div className="flex flex-col" style={{ minHeight: "60vh" }}>
       <div className="flex-1 space-y-3 mb-6 overflow-y-auto">
-        {messages.map((msg, i) => (
-          <AgentMessage key={i} role={msg.role} text={msg.text} />
+        {history.map((msg, i) => (
+          <AgentMessage
+            key={i}
+            role={msg.role === "user" ? "user" : "agent"}
+            text={msg.content}
+            memories={
+              // Show memories on the last assistant message
+              msg.role === "assistant" && i === history.length - 1
+                ? lastMemories
+                : undefined
+            }
+          />
         ))}
         {thinking && <AgentThinking />}
         <div ref={bottomRef} />
       </div>
 
-      {done ? (
+      {formComplete ? (
         <GlassButton variant="coral" className="w-full" onClick={onComplete}>
           Plan My Trip
         </GlassButton>
@@ -81,12 +127,16 @@ export default function AgentChat({ tripData, onTripDataChange, onComplete }: Ag
           <input
             type="text"
             className="glass-input flex-1"
-            placeholder="Type your answer..."
+            placeholder="Tell me about your trip..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && send()}
           />
-          <GlassButton variant="blue" onClick={send} disabled={!input.trim() || thinking}>
+          <GlassButton
+            variant="blue"
+            onClick={send}
+            disabled={!input.trim() || thinking}
+          >
             Send
           </GlassButton>
         </div>
